@@ -36,14 +36,12 @@
     <div class="col-md-6 "><!-- Start of Question and Submission DIV (column) -->
         <h1 id="question"><span id="i18n_question">Which scientific species is this animal?</span></h1> <!-- The question will be loaded here -->
         <div id="answer"> <!-- Start DIV for the submission buttons -->
-            <!-- If the user clicks this button, the saved answer will be value="yes"-->
-            <button class="btn btn-success btn-answer" value='Yes'><i class="fa fa-thumbs-o-up"></i> <span id="i18n_yes">Yes</span></button>
-            <!-- If the user clicks this button, the saved answer will be value="no"-->
-            <button class="btn btn-danger btn-answer" value='No'><i class="fa fa-thumbs-o-down"></i> No</button>
-            <!-- If the user clicks this button, the saved answer will be value="NoPhoto"-->
             <button class="btn btn-answer" value='NoPhoto'><i class="fa fa-exclamation"></i> <span id="i18n_no_photo">No photo</span></button>
-            <!-- If the user clicks this button, the saved answer will be value="NotKnown"-->
             <button class="btn btn-answer" value='NotKnown'><i class="fa fa-question-circle"></i> <span id="i18n_i_dont_know">I don't know</span></button>
+            <button class="btn btn-answer" value='Save'><i class="fa fa-save"></i> <span id="i18n_save">Save answer</span></button>
+            <input id="sciName" type="text" placeholder="scientific name"></input>
+            <input id="searchText" type="text" placeholder="search by name"></input>
+            <button id="search" class="btn btn-default" value=''><i class="fa fa-search"></i> <span id="i18n_search">Search</span></button>
         </div><!-- End of DIV for the submission buttons -->
         <!-- Feedback items for the user -->
         <p><span id="i18n_working_task">You are working now on task:</span> <span id="task-id" class="label label-warning">#</span></p>
@@ -53,18 +51,10 @@
         <div class="progress progress-striped">
             <div id="progress" rel="tooltip" title="#" class="progress-bar" style="width: 0%;"  role="progressbar"></div>
         </div>
-        <!-- 
-            This application uses Disqus to allow users to provide some feedback.
-            The next section includes a button that when a user clicks on it will
-            load the comments, if any, for the given task
-        -->
-        <div id="disqus_show_btn" style="margin-top:5px;">
-            <button class="btn btn-primary btn-large btn-disqus" onclick="loadDisqus()"><i class="fa fa-comments"></i> <span id="i18n_show_comments">Show comments</span></button>
-            <button class="btn btn-large btn-disqus" onclick="loadDisqus()" style="display:none"><i class="fa fa-comments"></i> <span id="i18n_hide_comments">Hide comments</span></button>
-        </div><!-- End of Disqus Button section -->
-        <!-- Disqus thread for the given task -->
-        <div id="disqus_thread" style="margin-top:5px;display:none"></div>
-    </div><!-- End of Question and Submission DIV (column) -->
+
+        <ul id="searchResults" style="margin-top:5px;"></ul>
+
+    </div>
     <div class="col-md-6"><!-- Start of Photo DIV (column) -->
         <a id="photo-link" href="#">
             <img id="photo" src="http://i.imgur.com/GeHxzb7.png" style="max-width=100%">
@@ -72,27 +62,6 @@
         <span id="photo-tags"</span>
     </div><!-- End of Photo DIV (columnt) -->
 </div><!-- End of Skeleton Row -->
-
-<script type="text/javascript">
-    /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
-
-    /* * * DON'T EDIT BELOW THIS LINE * * */
-    function loadDisqus() {
-    $("#disqus_thread").toggle();
-    $(".btn-disqus").toggle();
-    var disqus_shortname = 'pybossa'; // required: replace example with your forum shortname
-    //var disqus_identifier = taskId;
-    var disqus_developer = 1;
-
-    (function() {
-        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
-        dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
-        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
-    })();
-    }
-
-</script>
-<noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
 
 <script>
 // Default language
@@ -106,15 +75,12 @@ var messages = {"en": {
                         "i18n_thanks": "Thanks a lot!",
                         "i18n_congratulations": "Congratulations",
                         "i18n_congratulations_text": "You have participated in all available tasks!",
-                        "i18n_yes": "Yes",
                         "i18n_no_photo": "No photo",
                         "i18n_i_dont_know": "I don't know",
                         "i18n_working_task": "You are working now on task:",
                         "i18n_tasks_completed": "You have completed:",
                         "i18n_tasks_from": "tasks from",
-                        "i18n_show_comments": "Show comments:",
-                        "i18n_hide_comments": "Hide comments:",
-                        "i18n_question": "Do you see a human face in this photo?",
+                        "i18n_question": "What is the scientific name of this animal?",
                       },
                 "es": {
                         "i18n_welldone": "Bien hecho!",
@@ -124,14 +90,11 @@ var messages = {"en": {
                         "i18n_thanks": "Muchísimas gracias!",
                         "i18n_congratulations": "Enhorabuena",
                         "i18n_congratulations_text": "Has participado en todas las tareas disponibles!",
-                        "i18n_yes": "Sí",
                         "i18n_no_photo": "No hay foto",
                         "i18n_i_dont_know": "No lo sé",
                         "i18n_working_task": "Estás trabajando en la tarea:",
                         "i18n_tasks_completed": "Has completado:",
                         "i18n_tasks_from": "tareas de",
-                        "i18n_show_comments": "Mostrar comentarios",
-                        "i18n_hide_comments": "Ocultar comentarios",
                         "i18n_question": "¿Cual es el nombre científico de este animal?",
                       },
                };
@@ -158,6 +121,62 @@ function loadUserProgress() {
         $("#progress").tooltip({'placement': 'left'}); 
         $("#total").text(data.total);
         $("#done").text(data.done);
+    });
+}
+
+function searchByName(name, callback) {
+        var searchUrl = "http://eol.org/api/search/1.0.json?page=1&exact=false&filter_by_string=lepidoptera&q=";
+        $.ajax({
+            url: searchUrl + name,
+            crossDomain: true,
+            dataType: "jsonp"
+        })
+        .done(function(data){
+            var results = data.results || [];
+            callback(results);
+        });
+    }
+
+function displaySearchResults(results) {
+    var resultsContainer = $('#searchResults');
+    resultsContainer.empty();
+    console.log(resultsContainer);
+    console.log(results.length)
+    if (results.length > 0) {
+        results.forEach(function(result) {
+            console.log(result);
+            resultsContainer.append($('<li id="'+result.id+'">'+result.title+'</li>'));
+            addThumbnailsToResult(result.id);
+        });
+    }
+    else {
+        resultsContainer.append($('<span>Sorry, your search returned no results...</span>'));
+    }
+
+}
+
+function getAnimalImages(pageId, callback) {
+    var pageURL = "http://eol.org/api/pages/1.0/"+pageId+".json?images=2&amp;videos=0&amp;sounds=0&amp;maps=0&amp;text=0&amp;iucn=false&amp;subjects=overview&amp;licenses=all&amp;details=true&amp;common_names=false&amp;synonyms=false&amp;references=false&amp;vetted=0&amp;cache_ttl=";
+
+    $.ajax({
+        url: pageURL,
+        crossDomain: true,
+        dataType: "jsonp"
+    })
+    .done(function(data){
+        var images = data.dataObjects || [];
+        callback(images);
+    });
+}
+
+function addThumbnailsToResult(resultId) {
+    var container = $('#'+resultId);
+    getAnimalImages(resultId, appendImagesTo.bind(this, container));
+}
+
+function appendImagesTo(container, images) {
+    images.forEach(function(image) {
+        container.append($('<a href="'+image.eolMediaURL+'" target="_blank"><img src="'+image.eolThumbnailURL+'"></a>'));
     });
 }
 
@@ -191,12 +210,19 @@ pybossa.presentTask(function(task, deferred) {
         $("#photo-link").attr("href", task.info.link);
         $("#photo-tags").html('').append(task.info.tags);
         console.log(task.info.tags);
-        //$("#question").html(task.info.question);
         $('#task-id').html(task.id);
+        $('#search').off('click').on('click', function(evt) {
+
+            var query = $('#searchText').attr("value");
+            if (query !== '') {
+                searchByName(query, displaySearchResults);
+            }
+        });
         $('.btn-answer').off('click').on('click', function(evt) {
             var answer = $(this).attr("value");
             if (typeof answer != 'undefined') {
-                //console.log(answer);
+                if (answer === 'Save') answer = $('#sciName').attr("value");
+                console.log(answer);
                 pybossa.saveTask(task.id, answer).done(function() {
                     deferred.resolve();
                 });
