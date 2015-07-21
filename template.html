@@ -1,5 +1,15 @@
 <style type="text/css">
-    
+    #searchResults li {
+        width: 210px;
+        display: inline-block;
+        vertical-align: top;
+
+    }
+    #searchResults li img {
+        max-width: 100px;
+        max-height: 100px;
+        margin: 10px;
+    }
 </style>
 
 <div class="row">
@@ -21,7 +31,7 @@
             <br/>
             <div class="alert-actions">
                 <a class="btn small" href="/">Go back</a>
-                <a class="btn small" href="/app">or, Check other projects</a>
+                <a class="btn small" href="/project">or, Check other projects</a>
             </div>
         </div>
         <div id="error" class="alert alert-danger" style="display:none;">
@@ -31,41 +41,34 @@
     </div> <!-- End Success and Error Messages for the user -->
 </div> <!-- End of Row -->
 
-<!--
-    Task DOM for loading the Flickr Images
-    It uses the class="skeleton" to identify the elements that belong to the
-    task.
--->
-<div class="row skeleton"> <!-- Start Skeleton Row-->
-    <div class="col-md-6 "><!-- Start of Question and Submission DIV (column) -->
-        <h1 id="question"><span id="i18n_question">Which scientific species is this animal?</span></h1> <!-- The question will be loaded here -->
-        <div id="answer"> <!-- Start DIV for the submission buttons -->
+<div class="row skeleton">
+    <div class="col-md-6 ">
+        <h1 id="question"><span id="i18n_question">Which scientific species is this animal?</span></h1>
+        <div id="answer">
             <button class="btn btn-answer" value='NoPhoto'><i class="fa fa-exclamation"></i> <span id="i18n_no_photo">No photo</span></button>
             <button class="btn btn-answer" value='NotKnown'><i class="fa fa-question-circle"></i> <span id="i18n_i_dont_know">I don't know</span></button>
             <button class="btn btn-answer" value='Save'><i class="fa fa-save"></i> <span id="i18n_save">Save answer</span></button>
             <input id="sciName" type="text" placeholder="scientific name"></input>
             <input id="searchText" type="text" placeholder="search by name"></input>
             <button id="search" class="btn btn-default" value=''><i class="fa fa-search"></i> <span id="i18n_search">Search</span></button>
-        </div><!-- End of DIV for the submission buttons -->
-        <!-- Feedback items for the user -->
+        </div>
         <p><span id="i18n_working_task">You are working now on task:</span> <span id="task-id" class="label label-warning">#</span></p>
         <p><span id="i18n_tasks_completed">You have completed:</span> <span id="done" class="label label-info"></span> <span id="i18n_tasks_from">tasks from</span>
-        <!-- Progress bar for the user -->
         <span id="total" class="label label-info"></span></p>
         <div class="progress progress-striped">
             <div id="progress" rel="tooltip" title="#" class="progress-bar" style="width: 0%;"  role="progressbar"></div>
         </div>
-
-        <ul id="searchResults" style="margin-top:5px;"></ul>
-
     </div>
-    <div class="col-md-6"><!-- Start of Photo DIV (column) -->
+    <div class="col-md-6">
         <a id="photo-link" href="#">
             <img id="photo" src="http://i.imgur.com/GeHxzb7.png" style="max-width=100%">
         </a>
         <span id="photo-tags"</span>
-    </div><!-- End of Photo DIV (columnt) -->
-</div><!-- End of Skeleton Row -->
+    </div>
+</div>
+<div class="row">
+    <ul id="searchResults" class="col-md-10 col-md-offset-2"></ul>
+</div>
 
 <script>
 // Default language
@@ -154,7 +157,7 @@ function displaySearchResults(searchResult) {
     }
     if (results.length > 0) {
         results.forEach(function(result) {
-            resultsContainer.append($('<li id="'+result.id+'">'+result.title+'</li>'));
+            resultsContainer.append($('<li id="'+result.id+'" class="row"><span>'+result.title+'</span></li>'));
             addThumbnailsToResult(result.id);
         });
         if (currentPage < totalPages) {
@@ -176,20 +179,6 @@ function addLoadMoreResultsButton(nextPage) {
     resultsContainer.append(loadButton);
 }
 
-function getAnimalImages(pageId, callback) {
-    var pageURL = "http://eol.org/api/pages/1.0/"+pageId+".json?images=2&amp;videos=0&amp;sounds=0&amp;maps=0&amp;text=0&amp;iucn=false&amp;subjects=overview&amp;licenses=all&amp;details=true&amp;common_names=false&amp;synonyms=false&amp;references=false&amp;vetted=0&amp;cache_ttl=";
-
-    $.ajax({
-        url: pageURL,
-        crossDomain: true,
-        dataType: "jsonp"
-    })
-    .done(function(data){
-        var images = data.dataObjects || [];
-        callback(images);
-    });
-}
-
 function addThumbnailsToResult(resultId) {
     var container = $('#'+resultId);
     getAnimalImages(resultId, appendImagesTo.bind(this, container));
@@ -198,6 +187,19 @@ function addThumbnailsToResult(resultId) {
 function appendImagesTo(container, images) {
     images.forEach(function(image) {
         container.append($('<a href="'+image.eolMediaURL+'" target="_blank"><img src="'+image.eolThumbnailURL+'"></a>'));
+    });
+}
+
+function getAnimalImages(pageId, callback) {
+    var pageURL = "http://eol.org/api/pages/1.0/"+pageId+".json?images=2&amp;videos=0&amp;sounds=0&amp;maps=0&amp;text=0&amp;iucn=false&amp;subjects=overview&amp;licenses=all&amp;details=true&amp;common_names=false&amp;synonyms=false&amp;references=false&amp;vetted=0&amp;cache_ttl=";
+    $.ajax({
+        url: pageURL,
+        crossDomain: true,
+        dataType: "jsonp"
+    })
+    .done(function(data){
+        var images = data.dataObjects || [];
+        callback(images);
     });
 }
 
