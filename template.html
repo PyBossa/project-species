@@ -1,3 +1,7 @@
+<style type="text/css">
+    
+</style>
+
 <div class="row">
     <!-- Success and Error Messages for the user --> 
     <div class="col-md-6 col-md-offset-2" style="height:50px">
@@ -124,35 +128,52 @@ function loadUserProgress() {
     });
 }
 
-function searchByName(name, callback) {
-        var searchUrl = "http://eol.org/api/search/1.0.json?page=1&exact=false&filter_by_string=lepidoptera&q=";
-        $.ajax({
-            url: searchUrl + name,
-            crossDomain: true,
-            dataType: "jsonp"
-        })
-        .done(function(data){
-            var results = data.results || [];
-            callback(results);
-        });
-    }
+function searchByName(name, callback, page) {
+    page = page || 1;
+    var searchUrl = "http://eol.org/api/search/1.0.json?page="+ page +"&exact=false&filter_by_string=lepidoptera&q=";
+    $.ajax({
+        url: searchUrl + name,
+        crossDomain: true,
+        dataType: "jsonp"
+    })
+    .done(function(data){
+        callback(data);
+    });
+}
 
-function displaySearchResults(results) {
+function displaySearchResults(searchResult) {
     var resultsContainer = $('#searchResults');
-    resultsContainer.empty();
-    console.log(resultsContainer);
-    console.log(results.length)
+    var results = searchResult.results || [];
+    var currentPage = parseInt(searchResult.self.split('=').pop());
+    var totalPages = parseInt(searchResult.last.split('=').pop());
+    if (currentPage > 1) {
+        resultsContainer.children().last().remove();
+    }
+    else {
+        resultsContainer.empty();
+    }
     if (results.length > 0) {
         results.forEach(function(result) {
-            console.log(result);
             resultsContainer.append($('<li id="'+result.id+'">'+result.title+'</li>'));
             addThumbnailsToResult(result.id);
         });
+        if (currentPage < totalPages) {
+            addLoadMoreResultsButton(currentPage+1);
+        }
     }
     else {
         resultsContainer.append($('<span>Sorry, your search returned no results...</span>'));
     }
+}
 
+function addLoadMoreResultsButton(nextPage) {
+    var resultsContainer = $('#searchResults');
+    var loadButton = $('<button class="btn btn-default"><span>Load more</span></button>');
+    loadButton.on('click', function() {
+        var query = $('#searchText').attr("value");
+        searchByName(query, displaySearchResults, nextPage);
+    })
+    resultsContainer.append(loadButton);
 }
 
 function getAnimalImages(pageId, callback) {
@@ -193,7 +214,6 @@ pybossa.taskLoaded(function(task, deferred) {
         task.info.image = img;
         task.tags = ""
         for (i=0; i<=task.info.photo_info.photo.tags.length; i++){
-            console.log(task.info.photo_info.photo.tags[i]);
            task.tags += " " + task.info.photo_info.photo.tags[i].raw
         }
     }
@@ -209,7 +229,6 @@ pybossa.presentTask(function(task, deferred) {
         $('#photo-link').html('').append(task.info.image);
         $("#photo-link").attr("href", task.info.link);
         $("#photo-tags").html('').append(task.info.tags);
-        console.log(task.info.tags);
         $('#task-id').html(task.id);
         $('#search').off('click').on('click', function(evt) {
 
