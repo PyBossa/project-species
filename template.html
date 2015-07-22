@@ -1,22 +1,21 @@
 <style type="text/css">
-    #searchResults li {
+    #searchResults > li {
         width: 240px;
         display: inline-block;
         vertical-align: top;
-        border: solid;
+        border: dashed;
         border-width: thin;
         border-color: #2B9884;
-        height: 130px;
         margin: 5px;
         padding: 5px;
         text-align: left;
     }
-    #searchResults li img {
+    #searchResults > li > a > img {
         max-width: 100px;
         max-height: 100px;
         margin: 5px;
     }
-    #searchResults li span {
+    #searchResults > li > span {
         display: block;
     }
     .loadMoreBtn {
@@ -160,19 +159,17 @@ function searchByName(name, callback, page) {
 function displaySearchResults(searchResult) {
     var resultsContainer = $('#searchResults');
     var results = searchResult.results || [];
-    var currentPage = parseInt(searchResult.self.split('=').pop());
-    var totalPages = parseInt(searchResult.last.split('=').pop());
-    if (currentPage > 1) {
-        resultsContainer.children().last().remove();
-    }
-    else {
-        resultsContainer.empty();
-    }
     if (results.length > 0) {
+        var currentPage = parseInt(searchResult.self.split('=').pop());
+        var totalPages = parseInt(searchResult.last.split('=').pop());
+        if (currentPage > 1) {
+            resultsContainer.children().last().remove();
+        }
         results.forEach(function(result) {
             var link = '<a href="' + result.link + '" target="_blank">' + result.title + '</a>';
             resultsContainer.append($('<li id="'+result.id+'"><span>'+link+'</span></li>'));
             addThumbnailsToResult(result.id);
+            addContentMineFactsToResult(result.id, result.title);
         });
         if (currentPage < totalPages) {
             addLoadMoreResultsButton(currentPage+1);
@@ -181,6 +178,45 @@ function displaySearchResults(searchResult) {
     else {
         resultsContainer.append($('<span>Sorry, your search returned no results...</span>'));
     }
+}
+
+function addContentMineFactsToResult(resultId, factSubject) {
+    var container = $('#'+resultId);
+    getContentMineFacts(factSubject, appendFactsTo.bind(this, container));
+}
+
+function getContentMineFacts(factSubject, callback) {
+    var url = "http://api.contentmine.org/query/facts?q=";
+    $.ajax({
+        url: url + factSubject,
+        dataType: "json"
+    })
+    .done(function(data){
+        var facts = data.hits.hits || [];
+        callback(facts);
+    });
+}
+
+function appendFactsTo(container, facts) {
+    if (facts.length !== 0) {
+        var title = $("<p>ContentMine related facts: </p>");
+        var unifiedFacts = collectUniqueFactURLs(facts);
+        container.append(title);
+        container.append(unifiedFacts);
+    }
+}
+
+function collectUniqueFactURLs(facts) {
+    var factUrls = facts.map(function(fact) {
+        return fact._source.url;
+    });
+    var uniqueFacts = factUrls.filter(function(item, pos) {
+        return factUrls.indexOf(item) === pos;
+    })
+    var htmlReadyFacts = uniqueFacts.map(function(factUrl, pos) {
+        return $('<li><a href="' + factUrl + '">Ref #' + (pos+1) + '</a></li>');
+    });
+    return $('<ul></ul>').append(htmlReadyFacts);
 }
 
 function addLoadMoreResultsButton(nextPage) {
@@ -251,6 +287,7 @@ pybossa.presentTask(function(task, deferred) {
         $('#search').off('click').on('click', function(evt) {
             var query = $('#searchText').attr("value");
             if (query !== '') {
+                $('#searchResults').empty();
                 searchByName(query, displaySearchResults);
             }
         });
