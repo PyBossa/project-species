@@ -240,6 +240,8 @@ pybossa.taskLoaded(function(task, deferred) {
 
 pybossa.presentTask(function(task, deferred) {
     if ( !$.isEmptyObject(task) ) {
+        $('#searchText').val("");
+        $('#searchResults').empty();
         loadUserProgress();
         i18n_translate();
         $('#photo-link').html('').append(task.info.image);
@@ -247,7 +249,6 @@ pybossa.presentTask(function(task, deferred) {
         $("#photo-tags").html('').append(task.info.tags);
         $('#task-id').html(task.id);
         $('#search').off('click').on('click', function(evt) {
-
             var query = $('#searchText').attr("value");
             if (query !== '') {
                 searchByName(query, displaySearchResults);
