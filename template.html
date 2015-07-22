@@ -166,10 +166,15 @@ function displaySearchResults(searchResult) {
             resultsContainer.children().last().remove();
         }
         results.forEach(function(result) {
-            var link = '<a href="' + result.link + '" target="_blank">' + result.title + '</a>';
+            var title = result.title.split(' ')[0];
+            var titleSecondWord = result.title.split(' ')[1];
+            if (titleSecondWord !== undefined) {
+                title += " " + titleSecondWord;
+            }
+            var link = '<a href="' + result.link + '" target="_blank">' + title + '</a>';
             resultsContainer.append($('<li id="'+result.id+'"><span>'+link+'</span></li>'));
             addThumbnailsToResult(result.id);
-            addContentMineFactsToResult(result.id, result.title);
+            addContentMineFactsToResult(result.id, title);
         });
         if (currentPage < totalPages) {
             addLoadMoreResultsButton(currentPage+1);
@@ -189,6 +194,7 @@ function getContentMineFacts(factSubject, callback) {
     var url = "http://api.contentmine.org/query/facts?q=";
     $.ajax({
         url: url + factSubject,
+        crossDomain: true,
         dataType: "json"
     })
     .done(function(data){
