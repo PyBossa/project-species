@@ -22,6 +22,12 @@
         margin-left: 74px;
         margin-top: 54px;
     }
+    #sciName {
+        width: 240px;
+    }
+    #answer > * {
+        margin-top: 5px;
+    }
 </style>
 
 <div class="row">
@@ -60,7 +66,9 @@
             <button class="btn btn-answer" value='NoPhoto'><i class="fa fa-exclamation"></i> <span id="i18n_no_photo">No photo</span></button>
             <button class="btn btn-answer" value='NotKnown'><i class="fa fa-question-circle"></i> <span id="i18n_i_dont_know">I don't know</span></button>
             <button class="btn btn-answer" value='Save'><i class="fa fa-save"></i> <span id="i18n_save">Save answer</span></button>
-            <input id="sciName" type="text" placeholder="scientific name"></input>
+            <br>
+            <input id="sciName" type="text" placeholder="Fill in with the scientific name"></input>
+            <br>
             <input id="searchText" type="text" placeholder="search by name"></input>
             <button id="search" class="btn btn-default" value=''><i class="fa fa-search"></i> <span id="i18n_search">Search</span></button>
         </div>
@@ -68,7 +76,7 @@
         <p><span id="i18n_tasks_completed">You have completed:</span> <span id="done" class="label label-info"></span> <span id="i18n_tasks_from">tasks from</span>
         <span id="total" class="label label-info"></span></p>
         <div class="progress progress-striped">
-            <div id="progress" rel="tooltip" title="#" class="progress-bar" style="width: 0%;"  role="progressbar"></div>
+            <div id="progress" rel="tooltip" title="#" class="progress-bar" style="width: 0%;" role="progressbar"></div>
         </div>
     </div>
     <div class="col-md-6">
