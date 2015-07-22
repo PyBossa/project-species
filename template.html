@@ -1,14 +1,27 @@
 <style type="text/css">
     #searchResults li {
-        width: 210px;
+        width: 240px;
         display: inline-block;
         vertical-align: top;
-
+        border: solid;
+        border-width: thin;
+        border-color: #2B9884;
+        height: 130px;
+        margin: 5px;
+        padding: 5px;
+        text-align: left;
     }
     #searchResults li img {
         max-width: 100px;
         max-height: 100px;
-        margin: 10px;
+        margin: 5px;
+    }
+    #searchResults li span {
+        display: block;
+    }
+    .loadMoreBtn {
+        margin-left: 74px;
+        margin-top: 54px;
     }
 </style>
 
@@ -67,7 +80,8 @@
     </div>
 </div>
 <div class="row">
-    <ul id="searchResults" class="col-md-10 col-md-offset-2"></ul>
+    <ul id="searchResults" class="col-md-10 col-md-offset-1">
+    </ul>
 </div>
 
 <script>
@@ -157,7 +171,7 @@ function displaySearchResults(searchResult) {
     }
     if (results.length > 0) {
         results.forEach(function(result) {
-            resultsContainer.append($('<li id="'+result.id+'" class="row"><span>'+result.title+'</span></li>'));
+            resultsContainer.append($('<li id="'+result.id+'"><span>'+result.title+'</span></li>'));
             addThumbnailsToResult(result.id);
         });
         if (currentPage < totalPages) {
@@ -171,7 +185,7 @@ function displaySearchResults(searchResult) {
 
 function addLoadMoreResultsButton(nextPage) {
     var resultsContainer = $('#searchResults');
-    var loadButton = $('<button class="btn btn-default"><span>Load more</span></button>');
+    var loadButton = $('<button class="btn btn-default loadMoreBtn"><span>Load more</span></button>');
     loadButton.on('click', function() {
         var query = $('#searchText').attr("value");
         searchByName(query, displaySearchResults, nextPage);
@@ -181,12 +195,12 @@ function addLoadMoreResultsButton(nextPage) {
 
 function addThumbnailsToResult(resultId) {
     var container = $('#'+resultId);
-    getAnimalImages(resultId, appendImagesTo.bind(this, container));
+    getAnimalImages(resultId, prependImagesTo.bind(this, container));
 }
 
-function appendImagesTo(container, images) {
+function prependImagesTo(container, images) {
     images.forEach(function(image) {
-        container.append($('<a href="'+image.eolMediaURL+'" target="_blank"><img src="'+image.eolThumbnailURL+'"></a>'));
+        container.prepend($('<a href="'+image.eolMediaURL+'" target="_blank"><img src="'+image.eolThumbnailURL+'"></a>'));
     });
 }
 
