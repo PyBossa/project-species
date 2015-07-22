@@ -133,7 +133,6 @@ function i18n_translate() {
     }
 }
 
-
 function loadUserProgress() {
     pybossa.userProgress('speciesfinder').done(function(data){
         var pct = Math.round((data.done*100)/data.total);
@@ -171,7 +170,8 @@ function displaySearchResults(searchResult) {
     }
     if (results.length > 0) {
         results.forEach(function(result) {
-            resultsContainer.append($('<li id="'+result.id+'"><span>'+result.title+'</span></li>'));
+            var link = '<a href="' + result.link + '" target="_blank">' + result.title + '</a>';
+            resultsContainer.append($('<li id="'+result.id+'"><span>'+link+'</span></li>'));
             addThumbnailsToResult(result.id);
         });
         if (currentPage < totalPages) {
